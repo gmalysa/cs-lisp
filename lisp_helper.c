@@ -36,6 +36,108 @@ struct lisp_env *lisp_init(void) {
 }
 
 /**
+ * This prints out the content of an atomic symbol, which never needs to have spacing
+ * adjusted, parenthesis added, etc.
+ */
+void pp_atomic(struct s_exp *exp) {
+	if (IS_UNDEFINED(exp)) {
+		printf("#undefined");
+	}
+	else if (IS_ATOM(exp)) {
+		if (IS_SYMBOL(exp)) {
+			printf("%s", exp->lisp_car.label);
+		}
+		else if (IS_INT(exp)) {
+			printf("%ld", exp->lisp_car.siVal);
+		}
+		else if (IS_FLOAT(exp)) {
+			printf("%f", exp->lisp_car.dVal);
+		}
+		else if (IS_BOOL(exp)) {
+			if (exp->lisp_car.uiVal == 0) {
+				printf("#f");
+			}
+			else {
+				printf("#t");
+			}
+		}
+		else if (IS_STRING(exp)) {
+			printf("\"%s\"", exp->lisp_car.strVal);
+		}
+		else {
+			printf("#atomic");
+		}
+	}
+}
+
+/**
+ * Pretty print an S-expression, which includes indentation and formatting
+ * to make it human readable.
+ */
+void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel) {
+	int count;
+	char spaceBuf[2*tabLevel];
+
+	// Check that the expression isn't null. This shouldn't happen, but it's best to avoid crashing
+	if (exp == 0) {
+		lisp_error("pretty_print_exp() encountered a null S-Expression pointer.\n");
+		return;
+	}
+
+	// Construct a buffer with the whitespace count for this line
+	for (count = 0; count < tabLevel; ++count) {
+		spaceBuf[2*count] = ' ';
+		spaceBuf[2*count+1] = ' ';
+	}
+
+	// If we're looking at something that can't recurse further, call the atomic helper
+	if (IS_ATOM(exp)) {
+		pp_atomic(exp);
+	}
+	else {
+		// Otherwise, we have to recurse, which means spacing and/or grouping
+		if (!IS_ATOM(exp->lisp_car.car)) {
+			printf("(");
+			pp_helper(exp->lisp_car.car, 0, tabLevel+2);
+			printf(")");
+		}
+		else {
+			pp_atomic(exp->lisp_car.car);
+		}
+
+		// Having displayed our symbol, we need to add spacing or a newline depending on how far we are
+		if (symbolCount == 0) {
+			printf(" ");
+		}
+		else {
+			printf("\n");
+			printf(spaceBuf);
+		}
+
+		// Now, we are ready to recurse and print out the cdr
+		pp_helper(exp->lisp_cdr.cdr, symbolCount+1, tabLevel);
+	}
+	
+}
+
+/**
+ * User-exported pretty printer. Initializes symbol count and tab level, as well as handles
+ * the case of printing an atomic directly
+ */
+void pretty_print_exp(struct s_exp *exp) {
+	// If we're looking at an atom, just print it directly
+	if (IS_ATOM(exp)) {
+		pp_atomic(exp);
+	}
+	else {
+		// If not, throw down some parenthesis and then call our helper
+		printf("(");
+		pp_helper(exp, 0, 1);
+		printf(")");
+	}
+}
+
+/**
  * This allocates a bunch of s-expression structures and chains them together properly, so that
  * they can be used with find_free_s_exp()
  */
