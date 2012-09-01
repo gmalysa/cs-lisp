@@ -24,9 +24,9 @@ void lisp_parse_file(FILE *fp, void (*callback)(struct s_exp*)) {
 	char lineBuf[LINE_BUFFER_SIZE];
 	char *res;
 
-	// Check file for validity
+	// Check file for validity, although this really should be checked in the calling scope too
 	if (fp == NULL) {
-		lisp_error("File not opened before  calling lisp_parse_file()!");
+		lisp_error("File not opened before calling lisp_parse_file()!");
 		return;
 	}
 
