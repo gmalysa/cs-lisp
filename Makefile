@@ -1,5 +1,5 @@
 # Objects and source
-SRC=main.c lisp.c lisp_values.c lisp_helper.c
+SRC=main.c lisp.c lisp_values.c lisp_helper.c lisp_parser.c
 TARGET=lisp
 OBJ=$(SRC:.c=.o)
 
@@ -12,7 +12,7 @@ INCDIR=
 LIBDIR=
 
 # Compiler and linker flags
-CFLAGS=-Wall
+CFLAGS=-Wall -Wunused -Werror
 LDFLAGS=-lc
 
 %.o : %.c
