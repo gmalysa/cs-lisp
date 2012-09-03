@@ -19,6 +19,7 @@
 #define FLAG_BOOL			16
 #define FLAG_STRING			32
 #define FLAG_UNDEFINED		64
+#define FLAG_NIL			128
 
 // Helper macros to check for types
 #define IS_ATOM(x) ((x->flags & FLAG_ATOM) == FLAG_ATOM)
@@ -28,6 +29,7 @@
 #define IS_FLOAT(x) ((x->flags & FLAG_FLOAT) == FLAG_FLOAT)
 #define IS_STRING(x) ((x->flags & FLAG_STRING) == FLAG_STRING)
 #define IS_UNDEFINED(x) ((x->flags & FLAG_UNDEFINED) == FLAG_UNDEFINED)
+#define IS_NIL(x) ((x->flags & FLAG_NIL) == FLAG_NIL)
 
 /**
  * This structure defines the storage for any s-expression, which is effectively

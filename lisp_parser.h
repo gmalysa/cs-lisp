@@ -57,4 +57,7 @@ struct lp_token *tokenize_line(char *line, int lineNumber, struct lp_token *prev
 int find_next_token(char *buf, struct lp_token **token, char **nextBuf);
 int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struct lp_token **nextStartToken);
 
+// Debugging functions
+void describe_token(struct lp_token *token);
+
 #endif

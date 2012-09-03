@@ -76,7 +76,7 @@ void pp_atomic(struct s_exp *exp) {
  */
 void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel) {
 	int count;
-	char spaceBuf[2*tabLevel];
+	char spaceBuf[2*tabLevel+1];
 
 	// Check that the expression isn't null. This shouldn't happen, but it's best to avoid crashing
 	if (exp == 0) {
@@ -89,29 +89,36 @@ void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel) {
 		spaceBuf[2*count] = ' ';
 		spaceBuf[2*count+1] = ' ';
 	}
+	spaceBuf[2*tabLevel] = '\0';
+	
+	// If the next symbol is nil, don't display it
+	if (IS_NIL(exp) || (!IS_ATOM(exp) && IS_NIL(exp->lisp_car.car))) {
+		return;
+	}
+
+	// Display spacing and stuff before printing the next symbol
+	if (symbolCount == 1) {
+		printf(" ");
+	}
+	else if (symbolCount > 1) {
+		printf("\n");
+		printf(spaceBuf);
+	}
 
 	// If we're looking at something that can't recurse further, call the atomic helper
 	if (IS_ATOM(exp)) {
 		pp_atomic(exp);
 	}
 	else {
+
 		// Otherwise, we have to recurse, which means spacing and/or grouping
 		if (!IS_ATOM(exp->lisp_car.car)) {
 			printf("(");
-			pp_helper(exp->lisp_car.car, 0, tabLevel+2);
+			pp_helper(exp->lisp_car.car, 0, tabLevel+1);
 			printf(")");
 		}
 		else {
 			pp_atomic(exp->lisp_car.car);
-		}
-
-		// Having displayed our symbol, we need to add spacing or a newline depending on how far we are
-		if (symbolCount == 0) {
-			printf(" ");
-		}
-		else {
-			printf("\n");
-			printf(spaceBuf);
 		}
 
 		// Now, we are ready to recurse and print out the cdr

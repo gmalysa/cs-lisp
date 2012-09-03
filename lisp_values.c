@@ -16,8 +16,8 @@
 
 // The list terminator, nil
 struct s_exp _lisp_nil = {
-	.flags = FLAG_ATOM | FLAG_INT,
-	.lisp_car = {.siVal = 0},
+	.flags = FLAG_ATOM | FLAG_SYMBOL | FLAG_NIL,
+	.lisp_car = {.label = "nil"},
 	.lisp_cdr = {.cdr = 0}
 };
 

@@ -22,9 +22,9 @@ int main(int argc, char **argv) {
 	env = lisp_init();
 
 	// Open our test source file
-	fp = fopen("test.l", "r");
+	fp = fopen("test.lisp", "r");
 	if (fp == NULL) {
-		perror("Unable to open test file: test.l");
+		perror("Unable to open test file: test.lisp");
 		return 1;
 	}
 
@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
 	// Pretty print the expressions back to the console to show that we parsed them properly
 	while (expList != 0) {
 		pretty_print_exp(expList->exp);
+		printf("\n");
 		expList = expList->next;
 	}
 

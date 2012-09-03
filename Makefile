@@ -12,8 +12,8 @@ INCDIR=
 LIBDIR=
 
 # Compiler and linker flags
-CFLAGS=-Wall -Wunused -Werror
-LDFLAGS=-lc
+CFLAGS=-Wall -Wunused -Werror -ggdb
+LDFLAGS=-lc -ggdb
 
 %.o : %.c
 	$(CC) $(INCDIR) $(CFLAGS) -c $<

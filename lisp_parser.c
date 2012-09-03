@@ -39,7 +39,7 @@ struct s_list *lisp_parse_file(FILE *fp) {
 
 	// Check file for validity, although this really should be checked in the calling scope too
 	if (fp == NULL) {
-		lisp_error("File not opened before calling lisp_parse_file()!");
+		lisp_error("File not opened before calling lisp_parse_file()!\n");
 		return 0;
 	}
 
@@ -55,6 +55,7 @@ struct s_list *lisp_parse_file(FILE *fp) {
 	lineNumber = 1;
 	res = fgets(lineBuf, LINE_BUFFER_SIZE, fp);
 	while (res != NULL) {
+//		printf(">>Attempting to tokenize #%s", res);
 		// Farm out work to the line tokenizer instead of duplicating the code
 		prevToken = tokenize_line(res, lineNumber, prevToken);
 
@@ -62,7 +63,7 @@ struct s_list *lisp_parse_file(FILE *fp) {
 		res = fgets(lineBuf, LINE_BUFFER_SIZE, fp);
 		lineNumber++;
 	}
-
+	
 	// Now that we have all the tokens, parse them into a series of S-expressions
 	firstExp = 0;
 	expList = 0;
@@ -84,9 +85,11 @@ struct s_list *lisp_parse_file(FILE *fp) {
 			}
 		}
 		else {
-			lisp_error("File parsing terminated with an error -- see earlier messages for details.");
+			lisp_error("File parsing terminated with an error -- see earlier messages for details.\n");
 			return 0;
 		}
+
+		prevToken = nextToken;
 	}
 
 	// Deallocate all of the memory we used to create our tokens
@@ -94,6 +97,30 @@ struct s_list *lisp_parse_file(FILE *fp) {
 	
 	// Pass back the list of expressions
 	return firstExp;
+}
+
+/**
+ * Describe a token by printing flags, text, line number, etc.
+ */
+void describe_token(struct lp_token *token) {
+	const char *typeStr;
+
+	// Identify token type as a string
+	switch(token->type) {
+		case LPT_NULL: typeStr = "LPT_NULL"; break;
+		case LPT_OPEN_PAREN: typeStr = "LPT_OPEN_PAREN"; break;
+		case LPT_CLOSE_PAREN: typeStr = "LPT_CLOSE_PAREN"; break;
+		case LPT_OPEN_BRACKET: typeStr = "LPT_OPEN_BRACKET"; break;
+		case LPT_CLOSE_BRACKET: typeStr = "LPT_CLOSE_BRACKET"; break;
+		case LPT_QUOTE: typeStr = "LPT_QUOTE"; break;
+		case LPT_DOUBLE_QUOTE: typeStr = "LPT_DOUBLE_QUOTE"; break;
+		case LPT_SYMBOL: typeStr = "LPT_SYMBOL"; break;
+		case LPT_START: typeStr = "LPT_START"; break;
+		default: typeStr = "UNIDENTIFIED TOKEN"; break;
+	}
+
+	// Print out information
+	printf("---TOKEN---\n\tType: %s\n\tLine: %d\n\tText: %s\n", typeStr, token->lineNumber, token->text);
 }
 
 /**
@@ -112,6 +139,8 @@ struct lp_token *tokenize_line(char *line, int lineNumber, struct lp_token *prev
 
 	// Loop over the line searching for tokens
 	while (find_next_token(res, &nextToken, &nextBuf) == FOUND_TOKEN) {
+//		describe_token(nextToken);
+
 		// Append the newly found token to our list of tokens
 		prevToken->next = nextToken;
 		nextToken->lineNumber = lineNumber;
@@ -142,15 +171,11 @@ int find_next_token(char *buf, struct lp_token **token, char **nextBuf) {
 
 	// If we're at the end of the string, no token was found
 	if (*buf == 0) {
-		*token = 0;
-		*nextBuf = 0;
 		return NO_TOKEN;
 	}
 
 	// Check if this is the start of a comment, if so return no token because this applies to the line
 	if (buf[0] == ';') {
-		*token = 0;
-		*nextBuf = 0;
 		return NO_TOKEN;
 	}
 
@@ -191,7 +216,9 @@ int find_next_token(char *buf, struct lp_token **token, char **nextBuf) {
 	else {
 		// Doesn't match any single character rules, read out the whole symbol
 		end = buf;
-		while (!isspace(*end) && (*end != '\0')) {
+//		printf("Searching for symbol:\n\t");
+		while (!isspace(*end) && (*end != '\0') && (*end != ']') && (*end != ')')) {
+//			printf("%c,(0x%x)", *end, *end);
 			end++;
 		}
 
@@ -266,12 +293,12 @@ int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struc
 
 				// Advanced our list pointers for the next iteration
 				prevExp = exp;
-				nextToken = nextToken->next;
+				nextToken = nextExpToken;
 			}
 			
 			// If we broke to avoid a null pointer, that is a parse error
 			if (nextToken == 0) {
-				lisp_error("Unmatched ) or ] found in source! End of file reached.");
+				lisp_error("Unmatched ) or ] found in source! End of file reached.\n");
 				// TODO: Deallocate the memory used to construct this branch of the S-expression
 				return SEP_ERROR;
 			}
@@ -285,19 +312,19 @@ int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struc
 		case LPT_CLOSE_BRACKET:
 			// These get picked up by the open paren/bracket expressions, so we should never see
 			// them as the first element passed to the parser
-			lisp_error("Unexpected ) or ] on line %d.", startToken->lineNumber);
+			lisp_error("Unexpected ) or ] on line %d.\n", startToken->lineNumber);
 			return SEP_ERROR;
 		case LPT_QUOTE:
 			// TODO: Determine how to properly insert quotes into the S-expression tree as sugar
-			lisp_error("Unexpected ' on line %d. Quotes are not yet supported!", startToken->lineNumber);
+			lisp_error("Unexpected ' on line %d. Quotes are not yet supported!\n", startToken->lineNumber);
 			return SEP_ERROR;
 		case LPT_DOUBLE_QUOTE:
 			// TODO: Look for a matching double quote and take everything in between as a string
-			lisp_error("Unexpected \" on line %d. Double quotes are not yet supported!", startToken->lineNumber);
+			lisp_error("Unexpected \" on line %d. Double quotes are not yet supported!\n", startToken->lineNumber);
 			return SEP_ERROR;
 		default:
 			// This should never happen as we've handled the other three token types previously!
-			lisp_error("Unidentified token type %d found on line %d!", startToken->type, startToken->lineNumber);
+			lisp_error("Unidentified token type %d found on line %d!\n", startToken->type, startToken->lineNumber);
 			return SEP_ERROR;
 	}
 }
