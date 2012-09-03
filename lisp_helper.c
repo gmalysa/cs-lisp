@@ -220,6 +220,9 @@ void define_label(char *label, struct s_exp *val, struct lisp_env *env) {
  * call frame/locale (for instance, within a let statement, or something).
  *
  * Also, the environment struct itself must still be deallocated external to this function
+ *
+ * TODO: This will attempt to deallocate the statically allocated symbols for true, false and nil
+ * TODO: Add in checks to avoid attempting to deallocate them, as that will cause a crash
  */
 void cleanup_environment(struct lisp_env *env) {
 	struct lisp_mapping *next;

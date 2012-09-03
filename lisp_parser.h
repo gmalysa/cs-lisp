@@ -20,6 +20,10 @@
 #define NO_TOKEN				0
 #define FOUND_TOKEN				1
 
+// Status codes used by the S-expression parser
+#define SEP_ERROR				0
+#define SEP_SUCCESS				1
+
 // Token types
 #define LPT_NULL				0
 #define LPT_OPEN_PAREN			1
@@ -29,6 +33,7 @@
 #define LPT_QUOTE				5
 #define LPT_DOUBLE_QUOTE		6
 #define LPT_SYMBOL				7
+#define LPT_START				8
 
 // Linked list for storing all of the top-level s-expressions
 struct s_list {
@@ -45,9 +50,11 @@ struct lp_token {
 };
 
 // Parsing interface--parses lines and files
-void lisp_parse_file(FILE *fp, void (*callback)(struct s_exp*));
+struct s_list *lisp_parse_file(FILE *fp);
 
 // Helper functions, used internally
+struct lp_token *tokenize_line(char *line, int lineNumber, struct lp_token *prevToken);
 int find_next_token(char *buf, struct lp_token **token, char **nextBuf);
+int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struct lp_token **nextStartToken);
 
 #endif
