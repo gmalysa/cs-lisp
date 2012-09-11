@@ -93,6 +93,7 @@ void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel) {
 	
 	// If the next symbol is nil, don't display it
 	if (IS_NIL(exp) || (!IS_ATOM(exp) && IS_NIL(exp->lisp_car.car))) {
+//		printf("#<nil>");
 		return;
 	}
 

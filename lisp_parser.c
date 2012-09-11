@@ -272,10 +272,15 @@ int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struc
 			prevExp->lisp_car.car = lisp_nil;
 			prevExp->lisp_cdr.cdr = lisp_nil;
 			startExp = prevExp;
+			exp = prevExp;
 
 			// Move along the token list and add elements to the S-expression in list form
 			nextToken = startToken->next;
 			while (nextToken != 0 && nextToken->type != LPT_CLOSE_PAREN && nextToken->type != LPT_CLOSE_BRACKET) {
+				// Advance the expression pointer here, so that we can clean up and insert nils appropriately
+				// on termination of the outer while loop
+				prevExp = exp;
+
 				// Recursively find the next expression, which will form the car of the current expression
 				result = parse_s_expression(nextToken, &exp, &nextExpToken);
 				if (result == SEP_ERROR) {
@@ -291,8 +296,7 @@ int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struc
 				exp->lisp_car.car = lisp_nil;
 				exp->lisp_cdr.cdr = lisp_nil;
 
-				// Advanced our list pointers for the next iteration
-				prevExp = exp;
+				// Get next token pointer for next iteration
 				nextToken = nextExpToken;
 			}
 			
@@ -303,8 +307,13 @@ int parse_s_expression(struct lp_token *startToken, struct s_exp **newExp, struc
 				return SEP_ERROR;
 			}
 
-			// Otherwise, we broke because we got a matching parenthesis, so we need to advance our next token
-			// and return to the caller
+			// In order to avoid having a double nil at the end of the list (because one nil suffices),
+			// replace the cdr of the previous expression with a nil pointer and free the memory allocated for
+			// the next expression (it only contains two nil pointers)
+			prevExp->lisp_cdr.cdr = lisp_nil;
+			free(exp);
+
+			// With this subexpression complete, advance token chain and return a pointer to the exp
 			*nextStartToken = nextToken->next;
 			*newExp = startExp;
 			return SEP_SUCCESS;
