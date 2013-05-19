@@ -34,14 +34,13 @@ int main(int argc, char **argv) {
 
 	// Pretty print the expressions back to the console to show that we parsed them properly
 	while (expList != 0) {
-		printf("read in expression: ");
 		pretty_print_exp(expList->exp);
 		printf("\n");
 		
 		result = eval(expList->exp, env);
 		printf("eval() result: ");
 		pretty_print_exp(result);
-		printf("\n");
+		printf("\n\n");
 		expList = expList->next;
 	}
 

@@ -119,6 +119,7 @@ void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel);
 ///////////////////////////////////
 struct s_exp *apply(struct s_exp *function, struct s_exp *args);
 struct s_exp *eval(struct s_exp *exp, struct lisp_env *env);
+struct s_exp *evcond(struct s_exp *c, struct lisp_env *env);
 struct s_exp *eval_each(struct s_exp *exp, struct lisp_env *env);
 
 // Symbol definitions to expose primitives and handle builtins

@@ -57,7 +57,7 @@ struct s_exp *_eq(struct s_exp *a, struct s_exp *b) {
 	
 	// If either pointer is invalid, this is a problem
 	if (a == 0 || b == 0) {
-		lisp_error("Error: Not enough arguments supplied to eq?");
+		lisp_error("Error: Not enough arguments supplied to eq?\n");
 		return lisp_undefined;
 	}
 
@@ -88,7 +88,7 @@ struct s_exp *_cons(struct s_exp *a, struct s_exp *b) {
 	
 	// Validate pointers before going any farther
 	if (a == 0 || b == 0) {
-		lisp_error("Error: Invalid arguments supplied to cons");
+		lisp_error("Error: Invalid arguments supplied to cons\n");
 		return lisp_undefined;
 	}
 
@@ -107,7 +107,7 @@ struct s_exp *_cons(struct s_exp *a, struct s_exp *b) {
  */
 struct s_exp *_car(struct s_exp *s) {
 	if (s == 0 || IS_ATOM(s)) {
-		lisp_error("Error: Invalid argument (non-pair) to car");
+		lisp_error("Error: Invalid argument (non-pair) to car\n");
 		return lisp_undefined;
 	}
 
@@ -119,7 +119,7 @@ struct s_exp *_car(struct s_exp *s) {
  */
 struct s_exp *_cdr(struct s_exp *s) {
 	if (s == 0 || IS_ATOM(s)) {
-		lisp_error("Error: Invalid argument (non-pair) to cdr");
+		lisp_error("Error: Invalid argument (non-pair) to cdr\n");
 		return lisp_undefined;
 	}
 

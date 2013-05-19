@@ -25,10 +25,9 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 	// Check if this is an atom or a pair
 	if (IS_ATOM(exp)) {
 		if (IS_SYMBOL(exp)) {
-			// TODO: Look up this label in the environment given
 			rtn = lookup_label(exp->lisp_car.label, env);
 			if (IS_UNDEFINED(rtn)) {
-				// TODO: Print error message
+				lisp_error("undefined symbol %s\n", exp->lisp_car.label);
 			}
 			return rtn;
 		}
@@ -54,7 +53,7 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 				return _eq(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
 			}
 			else if (c_lisp_eq(car, lisp_cond) == 1) {
-				// TODO: Handle cond statements
+				return evcond(cdr, env);
 			}
 			else if (c_lisp_eq(car, lisp_car) == 1) {
 				return _car(eval(_car(cdr), env));
@@ -83,7 +82,7 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 
 			// Check that we've actually produced a function
 			if (!IS_FUNCTION(car)) {
-				lisp_error("Expected a function, received something else, in eval()");
+				lisp_error("Expected a function, received something else, in eval()\n");
 				return lisp_undefined;
 			}
 
@@ -96,8 +95,33 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 }
 
 /**
+ * Evaluates a conditional expression represented by c
+ */
+struct s_exp *evcond(struct s_exp *c, struct lisp_env *env) {
+	struct s_exp *car = _car(c);
+	struct s_exp *cdr = _cdr(c);
+
+	if (IS_ATOM(car)) {
+		lisp_error("atom passed to cond as conditional expression, expected pair\n");
+		return lisp_undefined;
+	}
+
+	if (c_lisp_eq(eval(_car(car), env), lisp_true) == 1) {
+		return eval(_car(_cdr(car)), env);
+	}
+	else if (c_lisp_eq(cdr, lisp_nil) == 1) {
+		return lisp_undefined;
+	}
+	else {
+		return evcond(cdr, env);
+	}
+}
+
+/**
  * Helper to evaluate the arguments list and return them as a single list to be
  * passed to the function call, as is expected
+ * In mccarthy's paper, this is called evlis, I wrote it for the function interface without
+ * realizing it was needed for core stuff too
  */
 struct s_exp *eval_each(struct s_exp *exp, struct lisp_env *env) {
 	if (IS_NIL(exp))

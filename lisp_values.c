@@ -104,7 +104,7 @@ struct s_exp _lisp_cdr = {
 
 struct s_exp _lisp_eq = {
 	.flags = FLAG_ATOM | FLAG_SYMBOL,
-	.lisp_car = {.label = "eq"},
+	.lisp_car = {.label = "eq?"},
 	.lisp_cdr = {.cdr = 0}
 };
 
