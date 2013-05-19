@@ -9,7 +9,7 @@
 		nil))
 
 ; A more complex expression, this computes the dot product of two vectors w and v
-(define dot (lambda (w v)
-	(cond
-		[(empty? w) 0]
-		[else (+ (* (car w) (car v)) (dot (cdr w) (cdr v)))])))
+;(define dot (lambda (w v)
+;	(cond
+;		[(empty? w) 0]
+;		[else (+ (* (car w) (car v)) (dot (cdr w) (cdr v)))])))

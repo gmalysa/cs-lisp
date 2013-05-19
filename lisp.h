@@ -20,6 +20,7 @@
 #define FLAG_STRING			32
 #define FLAG_UNDEFINED		64
 #define FLAG_NIL			128
+#define FLAG_FUNCTION		256
 
 // Helper macros to check for types
 #define IS_ATOM(x) ((x->flags & FLAG_ATOM) == FLAG_ATOM)
@@ -30,6 +31,7 @@
 #define IS_STRING(x) ((x->flags & FLAG_STRING) == FLAG_STRING)
 #define IS_UNDEFINED(x) ((x->flags & FLAG_UNDEFINED) == FLAG_UNDEFINED)
 #define IS_NIL(x) ((x->flags & FLAG_NIL) == FLAG_NIL)
+#define IS_FUNCTION(x) ((x->flags & FLAG_FUNCTION) == FLAG_FUNCTION)
 
 /**
  * This structure defines the storage for any s-expression, which is effectively
@@ -48,6 +50,7 @@ struct s_exp {
 		int64_t siVal;
 		char *strVal;
 		char *label;
+		struct s_exp *(*fn)(struct s_exp *);
 	} lisp_car;
 	union {
 		// If this is not an atom, cdr points to the rest of the list
@@ -116,6 +119,7 @@ void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel);
 ///////////////////////////////////
 struct s_exp *apply(struct s_exp *function, struct s_exp *args);
 struct s_exp *eval(struct s_exp *exp, struct lisp_env *env);
+struct s_exp *eval_each(struct s_exp *exp, struct lisp_env *env);
 
 // Symbol definitions to expose primitives and handle builtins
 #include "lisp_values.h"

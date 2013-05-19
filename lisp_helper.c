@@ -28,6 +28,10 @@ struct lisp_env *lisp_init(void) {
 	define_label("nil", lisp_nil, env);
 	define_label("#t", lisp_true, env);
 	define_label("#f", lisp_false, env);
+	define_label("cond", lisp_cond, env);
+	define_label("quote", lisp_quote, env);
+	define_label("define", lisp_define, env);
+	define_label("lambda", lisp_lambda, env);
 
 	// Allocate the initial batch of free s-expressions
 	next_free_exp = alloc_s_exp_to_free(100);
@@ -262,13 +266,4 @@ struct s_exp *find_free_s_exp(void) {
 	rtn = next_free_exp;
 	next_free_exp = next_free_exp->lisp_cdr.cdr;
 	return rtn;
-}
-
-/**
- * This wraps a call to a function that is provided as some kind of external primitive. In reality,
- * this delegates to another lisp-based handler, which knows the function's signature and parses
- * out the arguments.
- */
-struct s_exp *call_function(struct s_exp *function, struct s_exp *args) {
-	return lisp_nil;
 }

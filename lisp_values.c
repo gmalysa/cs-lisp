@@ -80,6 +80,40 @@ struct s_exp _lisp_lambda = {
 	.lisp_cdr = {.cdr = 0}
 };
 
+/**
+ * The primitive symbols
+ */
+
+struct s_exp _lisp_cons = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "cons"},
+	.lisp_cdr = {.cdr = 0}
+};
+
+struct s_exp _lisp_car = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "car"},
+	.lisp_cdr = {.cdr = 0}
+};
+
+struct s_exp _lisp_cdr = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "cdr"},
+	.lisp_cdr = {.cdr = 0}
+};
+
+struct s_exp _lisp_eq = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "eq"},
+	.lisp_cdr = {.cdr = 0}
+};
+
+struct s_exp _lisp_atom = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "atom"},
+	.lisp_cdr = {.cdr = 0}
+};
+
 // Now the structure pointers
 struct s_exp *lisp_undefined = &_lisp_undefined;
 struct s_exp *lisp_nil = &_lisp_nil;
@@ -90,3 +124,9 @@ struct s_exp *lisp_quote = &_lisp_quote;
 struct s_exp *lisp_cond = &_lisp_cond;
 struct s_exp *lisp_define = &_lisp_define;
 struct s_exp *lisp_lambda = &_lisp_lambda;
+
+struct s_exp *lisp_cons = &_lisp_cons;
+struct s_exp *lisp_car = &_lisp_car;
+struct s_exp *lisp_cdr = &_lisp_cdr;
+struct s_exp *lisp_eq = &_lisp_eq;
+struct s_exp *lisp_atom = &_lisp_atom;
