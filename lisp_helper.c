@@ -45,7 +45,7 @@ struct lisp_env *lisp_init(void) {
  */
 void pp_atomic(struct s_exp *exp) {
 	if (IS_UNDEFINED(exp)) {
-		printf("#undefined");
+		printf("#<undefined>");
 	}
 	else if (IS_ATOM(exp)) {
 		if (IS_SYMBOL(exp)) {
@@ -69,7 +69,7 @@ void pp_atomic(struct s_exp *exp) {
 			printf("\"%s\"", exp->lisp_car.strVal);
 		}
 		else {
-			printf("#atomic");
+			printf("#<atomic>");
 		}
 	}
 }
@@ -145,6 +145,22 @@ void pretty_print_exp(struct s_exp *exp) {
 		// If not, throw down some parenthesis and then call our helper
 		printf("(");
 		pp_helper(exp, 0, 1);
+		printf(")");
+	}
+	printf("\n");
+}
+
+/**
+ * Simple prints an expression, for when we don't want to bother with pretty printing
+ */
+void simple_print_exp(struct s_exp *exp) {
+	if (IS_ATOM(exp)) 
+		pp_atomic(exp);
+	else {
+		printf("(");
+		simple_print_exp(_car(exp));
+		printf(" ");
+		simple_print_exp(_cdr(exp));
 		printf(")");
 	}
 }

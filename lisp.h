@@ -107,6 +107,7 @@ void lisp_error(char *fmt, ...);
 struct s_exp *call_function(struct s_exp *function, struct s_exp *args);
 
 // Printing expressions to the screen
+void simple_print_exp(struct s_exp *exp);
 void pretty_print_exp(struct s_exp *exp);
 void pp_atomic(struct s_exp *exp);
 void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel);

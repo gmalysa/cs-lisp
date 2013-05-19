@@ -21,19 +21,16 @@
 int c_lisp_eq(struct s_exp *a, struct s_exp *b) {
 
 	// If either is not atomic, they are not equal
-	if (!IS_ATOM(a) || !IS_ATOM(b)) {
+	if (!IS_ATOM(a) || !IS_ATOM(b))
 		return 0;
-	}
 
 	// If either is undefined, they cannot be equal (undefined is not equal to anything, including itself)
-	if (IS_UNDEFINED(a) || IS_UNDEFINED(b)) {
+	if (IS_UNDEFINED(a) || IS_UNDEFINED(b))
 		return 0;
-	}
 
 	// If they have different flags, they can't be equal
-	if (a->flags != b->flags) {
+	if (a->flags != b->flags)
 		return 0;
-	}
 
 	// If we're dealing with a string or symbol, use strcmp
 	if (IS_STRING(a) || IS_SYMBOL(a)) {
@@ -53,19 +50,14 @@ int c_lisp_eq(struct s_exp *a, struct s_exp *b) {
  * S-expression wrapper for the C-environment version gives us our lisp version
  */
 struct s_exp *_eq(struct s_exp *a, struct s_exp *b) {
-	int is_eq;
-	
 	// If either pointer is invalid, this is a problem
 	if (a == 0 || b == 0) {
 		lisp_error("Error: Not enough arguments supplied to eq?\n");
 		return lisp_undefined;
 	}
 
-	is_eq = c_lisp_eq(a, b);
-
-	if (is_eq == 1) {
+	if (c_lisp_eq(a, b) == 1)
 		return lisp_true;
-	}
 
 	return lisp_false;
 }
@@ -74,9 +66,9 @@ struct s_exp *_eq(struct s_exp *a, struct s_exp *b) {
  * S-expression wrapper for our IS_ATOM() macro
  */
 struct s_exp *_atom(struct s_exp *s) {
-	if (IS_ATOM(s) && !IS_UNDEFINED(s)) {
+	if (IS_ATOM(s) && !IS_UNDEFINED(s))
 		return lisp_true;
-	}
+
 	return lisp_false;
 }
 

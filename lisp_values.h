@@ -23,6 +23,7 @@ extern struct s_exp *lisp_quote;
 extern struct s_exp *lisp_cond;
 extern struct s_exp *lisp_define;
 extern struct s_exp *lisp_lambda;
+extern struct s_exp *lisp_label;
 
 // Symbols for built-ins/primitive functions
 extern struct s_exp *lisp_cons;

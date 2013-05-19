@@ -16,6 +16,7 @@
  * This essentially attempts to follow the evaluator given in the paper, with a few modifications
  * to support things like self-evaluating types (i.e. a string or a number, as opposed to only
  * symbols), as well as any other primitives that we decide to implement.
+ * @todo Add error checking here
  */
 struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 	struct s_exp *rtn;
@@ -24,6 +25,7 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 	struct s_exp *caar;
 	struct s_exp *cadar;
 	struct s_exp *cur_arg;
+	struct s_exp *ret;
 	struct lisp_env *lambda_env;
 
 	// Check if this is an atom or a pair
@@ -42,8 +44,8 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 	}
 	
 	// Handle as a pair
-	car = exp->lisp_car.car;
-	cdr = exp->lisp_cdr.cdr;
+	car = _car(exp);
+	cdr = _cdr(exp);
 	
 	if (IS_ATOM(car)) {
 		// Handle a few specific special forms first, and then fall back to a symbol lookup
@@ -68,10 +70,15 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 		else if (c_lisp_eq(car, lisp_cons) == 1) {
 			return _cons(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
 		}
-		else {
-			car = eval(car, env);
-			// todo call apply with this function
+		else if (c_lisp_eq(car, lisp_define) == 1) {
+			// Note: cannot use define with lambdas yet, because they only evaluate in place
+			define_label(_car(cdr)->lisp_car.label, eval(_car(_cdr(cdr)), env), env);
 			return lisp_undefined;
+		}
+		else {
+			// Simply get the corresponding value from the env and then eval with args unmodified
+			car = lookup_label(car->lisp_car.label, env);
+			return eval(_cons(car, cdr), env);
 		}
 	}
 	else {
@@ -102,10 +109,20 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 			}
 
 			// Evaluate the body expression in the new environment
-			return eval(_car(_cdr(_cdr(car))), lambda_env);
+			ret = eval(_car(_cdr(_cdr(car))), lambda_env);
+			free(lambda_env);
+			return ret;
 		}
-		else if (c_lisp_eq(car, lisp_define) == 1) {
-			// TODO: Define an expression
+		else if (c_lisp_eq(caar, lisp_label) == 1) {
+			// Create a new environment that will store the label for recursion
+			lambda_env = (struct lisp_env *) calloc(1, sizeof(struct lisp_env));
+			lambda_env->parent = env;
+			define_label(cadar->lisp_car.label, car, lambda_env);
+
+			// Evaluate the expression once the label has been added
+			ret = eval(_cons(_car(_cdr(_cdr(car))), cdr), lambda_env);
+			cleanup_environment(lambda_env);
+			return ret;
 		}
 		else {
 			// It has to be a native function, so evaluate it and see what we get
@@ -122,8 +139,6 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 			return call_function(car, cdr);
 		}
 	}
-
-	return lisp_undefined;
 }
 
 /**

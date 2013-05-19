@@ -80,6 +80,13 @@ struct s_exp _lisp_lambda = {
 	.lisp_cdr = {.cdr = 0}
 };
 
+// Label form, allows for recursive lambdas
+struct s_exp _lisp_label = {
+	.flags = FLAG_ATOM | FLAG_SYMBOL,
+	.lisp_car = {.label = "label"},
+	.lisp_cdr = {.cdr = 0}
+};
+
 /**
  * The primitive symbols
  */
@@ -110,7 +117,7 @@ struct s_exp _lisp_eq = {
 
 struct s_exp _lisp_atom = {
 	.flags = FLAG_ATOM | FLAG_SYMBOL,
-	.lisp_car = {.label = "atom"},
+	.lisp_car = {.label = "atom?"},
 	.lisp_cdr = {.cdr = 0}
 };
 
@@ -124,6 +131,7 @@ struct s_exp *lisp_quote = &_lisp_quote;
 struct s_exp *lisp_cond = &_lisp_cond;
 struct s_exp *lisp_define = &_lisp_define;
 struct s_exp *lisp_lambda = &_lisp_lambda;
+struct s_exp *lisp_label = &_lisp_label;
 
 struct s_exp *lisp_cons = &_lisp_cons;
 struct s_exp *lisp_car = &_lisp_car;
