@@ -11,6 +11,8 @@
   [(eq? (quote b) (quote c)) (quote x)]
   [#t (quote y)])
 
+; Evaluate a lambda expression
+((lambda (x y) (cons x y)) (quote a) (quote b))
 
 ; A more complex expression, this computes the dot product of two vectors w and v
 ;(define dot (lambda (w v)

@@ -21,6 +21,10 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 	struct s_exp *rtn;
 	struct s_exp *car;
 	struct s_exp *cdr;
+	struct s_exp *caar;
+	struct s_exp *cadar;
+	struct s_exp *cur_arg;
+	struct lisp_env *lambda_env;
 
 	// Check if this is an atom or a pair
 	if (IS_ATOM(exp)) {
@@ -36,42 +40,69 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 			return exp;
 		}
 	}
-	else {
-		car = exp->lisp_car.car;
-		cdr = exp->lisp_cdr.cdr;
 	
-		if (IS_ATOM(car)) {
-			// Handle a few specific special forms first, and then fall back to a symbol lookup
-			if (c_lisp_eq(car, lisp_quote) == 1) {
-				// Quote doesn't evaluate its arguments, just pass through
-				return _car(cdr);
-			}
-			else if (c_lisp_eq(car, lisp_atom) == 1) {
-				return _atom(eval(_car(cdr), env));
-			}
-			else if (c_lisp_eq(car, lisp_eq) == 1) {
-				return _eq(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
-			}
-			else if (c_lisp_eq(car, lisp_cond) == 1) {
-				return evcond(cdr, env);
-			}
-			else if (c_lisp_eq(car, lisp_car) == 1) {
-				return _car(eval(_car(cdr), env));
-			}
-			else if (c_lisp_eq(car, lisp_cdr) == 1) {
-				return _cdr(eval(_car(cdr), env));
-			}
-			else if (c_lisp_eq(car, lisp_cons) == 1) {
-				return _cons(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
-			}
-			else {
-				car = eval(car, env);
-				// todo call apply with this function
-				return lisp_undefined;
-			}
+	// Handle as a pair
+	car = exp->lisp_car.car;
+	cdr = exp->lisp_cdr.cdr;
+	
+	if (IS_ATOM(car)) {
+		// Handle a few specific special forms first, and then fall back to a symbol lookup
+		if (c_lisp_eq(car, lisp_quote) == 1) {
+			return _car(cdr);
 		}
-		else if (c_lisp_eq(car, lisp_lambda) == 1) {
-			// TODO: Handle lambdas
+		else if (c_lisp_eq(car, lisp_atom) == 1) {
+			return _atom(eval(_car(cdr), env));
+		}
+		else if (c_lisp_eq(car, lisp_eq) == 1) {
+			return _eq(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
+		}
+		else if (c_lisp_eq(car, lisp_cond) == 1) {
+			return evcond(cdr, env);
+		}
+		else if (c_lisp_eq(car, lisp_car) == 1) {
+			return _car(eval(_car(cdr), env));
+		}
+		else if (c_lisp_eq(car, lisp_cdr) == 1) {
+			return _cdr(eval(_car(cdr), env));
+		}
+		else if (c_lisp_eq(car, lisp_cons) == 1) {
+			return _cons(eval(_car(cdr), env), eval(_car(_cdr(cdr)), env));
+		}
+		else {
+			car = eval(car, env);
+			// todo call apply with this function
+			return lisp_undefined;
+		}
+	}
+	else {
+		caar = _car(car);
+		cadar = _car(_cdr(car));
+
+		if (c_lisp_eq(caar, lisp_lambda) == 1) {
+			// Evaluate the rest of this application to the lambda
+			cdr = eval_each(cdr, env);
+
+			// Create a new environment, and push each formal argument to it with a value from the cdr
+			lambda_env = (struct lisp_env *) calloc(1, sizeof(struct lisp_env));
+			lambda_env->parent = env;
+
+			while (!IS_NIL(cadar)) {
+				cur_arg = _car(cadar);
+
+				if (!IS_ATOM(cur_arg)) {
+					lisp_error("Expected only atoms as formal arguments to lambda\n");
+					cleanup_environment(lambda_env);
+					return lisp_undefined;
+				}
+
+				define_label(cur_arg->lisp_car.label, _car(cdr), lambda_env);
+
+				cadar = _cdr(cadar);
+				cdr = _cdr(cdr);
+			}
+
+			// Evaluate the body expression in the new environment
+			return eval(_car(_cdr(_cdr(car))), lambda_env);
 		}
 		else if (c_lisp_eq(car, lisp_define) == 1) {
 			// TODO: Define an expression
@@ -90,8 +121,9 @@ struct s_exp *eval(struct s_exp *exp, struct lisp_env *env) {
 			cdr = eval_each(cdr, env);
 			return call_function(car, cdr);
 		}
-		return lisp_nil;
 	}
+
+	return lisp_undefined;
 }
 
 /**
