@@ -1,7 +1,8 @@
 # Objects and source
-SRC=main.c lisp.c lisp_values.c lisp_helper.c lisp_parser.c
+SRC=main.c lisp.c lisp_values.c lisp_helper.c lisp_parser.c lisp_primitives.c
 TARGET=lisp
 OBJ=$(SRC:.c=.o)
+DEBUG=-ggdb
 
 # Executables
 CC=gcc
@@ -12,8 +13,8 @@ INCDIR=
 LIBDIR=
 
 # Compiler and linker flags
-CFLAGS=-Wall -Wunused -Werror -ggdb
-LDFLAGS=-lc -ggdb
+CFLAGS=-Wall -Wunused -Werror $(DEBUG)
+LDFLAGS=-lc $(DEBUG)
 
 %.o : %.c
 	$(CC) $(INCDIR) $(CFLAGS) -c $<

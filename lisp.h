@@ -81,11 +81,21 @@ struct lisp_env {
 
 // Environment management/execution
 struct lisp_env *lisp_init(void);
-struct s_exp *alloc_s_exp(int count);
-struct s_exp *find_free_s_exp(void);
 struct s_exp *lookup_label(char *label, struct lisp_env *env);
 void define_label(char *label, struct s_exp *val, struct lisp_env *env);
 void cleanup_environment(struct lisp_env *env);
+
+// S-Expression memory management
+// Raw memory management, directly allocates and deallocates memory, used during parsing and compilation
+struct s_exp *malloc_sexp(void);
+void *free_sexp(struct s_exp *s);
+void free_sexp_list(struct s_exp *s);
+// Reference counting functions, these will track and tag expressions for garbage collection
+void addref(struct s_exp *s);
+void rmref(struct s_exp *s);
+// Manages the free store of elements, where unusued s-expressions are kept
+struct s_exp *alloc_s_exp_to_free(int count);
+struct s_exp *find_free_s_exp(void);
 
 // Error reporting
 void lisp_error(char *fmt, ...);
@@ -98,27 +108,16 @@ void pretty_print_exp(struct s_exp *exp);
 void pp_atomic(struct s_exp *exp);
 void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel);
 
-///////////////////////////////////
-// Primitive functions, defined in lisp_primitives.c
-///////////////////////////////////
-struct s_exp *atom(struct s_exp *s);
-struct s_exp *eq(struct s_exp *a, struct s_exp *b);
-struct s_exp *car(struct s_exp *s);
-struct s_exp *cdr(struct s_exp *s);
-struct s_exp *cons(struct s_exp *a, struct s_exp *b);
-struct s_exp *appq(struct s_exp *args);
+// Primitives for use inside the language
+#include "lisp_primitives.h"
 
 ///////////////////////////////////
 // The main evaluator functions, defined in lisp.c
 ///////////////////////////////////
 struct s_exp *apply(struct s_exp *function, struct s_exp *args);
-struct s_exp *eval(struct s_exp *exp);
+struct s_exp *eval(struct s_exp *exp, struct lisp_env *env);
 
-///////////////////////////////////
-// There are a bunch of built-in values used by these functions, their storage is allocated in lisp_values.c
-///////////////////////////////////
-extern struct s_exp *lisp_nil;
-extern struct s_exp *lisp_true;
-extern struct s_exp *lisp_false;
+// Symbol definitions to expose primitives and handle builtins
+#include "lisp_values.h"
 
 #endif

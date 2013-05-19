@@ -30,7 +30,7 @@ struct lisp_env *lisp_init(void) {
 	define_label("#f", lisp_false, env);
 
 	// Allocate the initial batch of free s-expressions
-	next_free_exp = alloc_s_exp(100);
+	next_free_exp = alloc_s_exp_to_free(100);
 
 	return env;
 }
@@ -149,7 +149,7 @@ void pretty_print_exp(struct s_exp *exp) {
  * This allocates a bunch of s-expression structures and chains them together properly, so that
  * they can be used with find_free_s_exp()
  */
-struct s_exp *alloc_s_exp(int count) {
+struct s_exp *alloc_s_exp_to_free(int count) {
 	struct s_exp *head;
 	int i;
 
@@ -184,7 +184,7 @@ struct s_exp *lookup_label(char *label, struct lisp_env *env) {
 	// First check to make sure we have environment left in which to search
 	if (env == 0 || env->mapping == 0) {
 		lisp_error("Label %s not found!", label);
-		return lisp_nil;
+		return lisp_undefined;
 	}
 
 	// Now walk this environment's mapping to look for this label
@@ -255,7 +255,7 @@ struct s_exp *find_free_s_exp(void) {
 
 	// Make sure we have space
 	if (next_free_exp == 0) {
-		next_free_exp = alloc_s_exp(100);
+		next_free_exp = alloc_s_exp_to_free(100);
 	}
 	
 	// Update our linked list and return the first free s-expression
