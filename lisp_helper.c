@@ -107,7 +107,7 @@ void pp_helper(struct s_exp *exp, int symbolCount, int tabLevel) {
 	}
 	else if (symbolCount > 1) {
 		printf("\n");
-		printf(spaceBuf);
+		printf("%s", spaceBuf);
 	}
 
 	// If we're looking at something that can't recurse further, call the atomic helper
